@@ -1,0 +1,19 @@
+{
+  "name": "portal_transparencia",
+  "version": "1.0.0",
+  "description": "",
+  "main": "codeceptjs run --steps",
+  "dependencies": {
+    "codeceptjs": "^0.6.3"
+  },
+  "devDependencies": {
+    "codeceptjs-webdriverio": "^1.1.0",
+    "nightmare": "^2.10.0",
+    "nightmare-upload": "^0.1.1"
+  },
+  "scripts": {
+    "run": "codeceptjs run --steps"
+  },
+  "author": "",
+  "license": "ISC"
+}

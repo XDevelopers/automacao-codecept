@@ -1,0 +1,17 @@
+{
+  "tests": "./*_test.js",
+  "timeout": 10000,
+  "output": "./output",
+  "helpers": {
+    "Nightmare":{
+      "url":"http://smgp.araucaria.pr.gov.br/PortalTransparencia/faces/restricted/dataFunc.xhtml",
+      "show": true,
+      "restart":true,
+      "windowSize": "1024x768"
+    }
+  },
+  "include": {},
+  "bootstrap": false,
+  "mocha": {},
+  "name": "portal_transparencia"
+}

@@ -1,0 +1,21 @@
+{
+    "ssn":"666821451",
+    "annualGrossIncome":"100000",
+    "loanAmount":"15000",
+    "dobMonth":"02",
+    "dobDay":"28",
+    "dobYear":"1983",
+    "employmentStatus":"Employed",
+    "firstName":"LIBBY",
+    "lastName":"COMEAU",
+    "address":"3315 EBBTIDE DR",
+    "city":"HOUSTON",
+    "state":"TX",
+    "zipCode":"77045",
+    "phoneNumber":"1666190810",
+    "email":"libby.comeau@test.lendfoundry.com",
+    "homeOwnership":"Rent",
+    "rentMortgagePayment":"1000",
+    "merchantUsername":"INFO+671@LENDFOUNDRY.COM",
+    "merchantPassword":"qwe123QWE!@#"
+}
