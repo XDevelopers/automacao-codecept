@@ -20,7 +20,7 @@ Scenario('End to End Crawler', function* (I) {
 
     // load the main page
     I.amOnPage("http://smgp.araucaria.pr.gov.br/PortalTransparencia/faces/restricted/dataFunc.xhtml");
-    I.wait(30);
+    I.wait(25);
 
     // set the period
     // select element by label, choose option by text
@@ -31,14 +31,21 @@ Scenario('End to End Crawler', function* (I) {
     I.selectOption('select[id="formTemplate:dataFunc:colTable_rppDD"]', '20');
     I.wait(30);
 
+    //I.click('tbody[id="formTemplate:dataFunc:colTable_data"]>tr>td:eq(0)');
+    //I.wait(15);
+
     // start to get data from datagrid, and start to mount the main object;
     // create output object
-    var output = Object.assign({
-        // nome -> $('tbody[id="formTemplate:dataFunc:colTable_data"]').find("tr td")[1];
-        //var password = yield I.grabTextFrom('#password');
-        nomeCompleto: yield I.grabValueFrom('tbody[id="formTemplate:dataFunc:colTable_data"] tr td:eq(1)'),
-    }, input);
+    // var output = Object.assign({
+    //     // nome -> $('tbody[id="formTemplate:dataFunc:colTable_data"]').find("tr td")[1];
+    //     //var password = yield I.grabTextFrom('#password');
+    //     nomeCompleto: yield I.grabValueFrom('tbody[id="formTemplate:dataFunc:colTable_data"]>tr>td:eq(1)'),
+    // }, input);
 
+    var output = {
+        //nomeCompleto: yield I.grabTextFrom('tbody[id="formTemplate:dataFunc:colTable_data"]>tr>td:eq(1)')
+        nomeCompleto: yield I.grabTextFrom({id: 'users'})
+    };
     // export output
     fs.writeFile("output.json", JSON.stringify(output), "utf8");
 
