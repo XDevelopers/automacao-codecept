@@ -9,10 +9,19 @@ $ npm-windows-upgrade
 
 $ wget https://nodejs.org/download/release/latest/win-x64/node.exe -OutFile 'C:\Program Files\nodejs\node.exe'
 
+
 $ [sudo] npm install -g selenium-standalone
+
 $ selenium-standalone install
+
 $ selenium-standalone start
 
+
+
+$ npm install -g nightmare nightmare-upload
+
 $ npm install -g codeceptjs
+
 $ npm install codeceptjs-webdriverio --save-dev
+
 $ codeceptjs run --steps
