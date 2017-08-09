@@ -30,18 +30,14 @@ Scenario('End to End Crawler', function* (I) {
     I.wait(30);
 
     //var rows = yield I.grabNumberOfVisibleElements({xpath: './/*[@id="formTemplate:dataFunc:colTable_data"]/tr'});
-    var rows = "";
-    var test = "";
+    
     // loop to get all records!
-    // inject hidden field with application number
-    I.executeScript(function () {
-        rows = $('tbody[id="formTemplate:dataFunc:colTable_data"]').size();
-        console.log(rows);
-        //test = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:dataFunc:colTable_data"]/tr[1]/td[2]'});
-        //var applicationNumber = $("tila-doc").prop('applicationNumber');
-        //$("tila-doc").append("<input type='hidden' id='applicationNumber' value='" + applicationNumber + "' />");
+    let rows = yield I.executeScript(function () {
+        var table = $(document.getElementById("formTemplate:dataFunc:colTable_data"));
+        return table.find("tr").length;
+        //return $x('//*[@id="formTemplate:dataFunc:colTable_data"]/tr').length;
     });
-    I.say('rows');
+
     I.say(rows);
 
     // start to get data from datagrid, and start to mount the main object;
@@ -55,13 +51,15 @@ Scenario('End to End Crawler', function* (I) {
         "liquido": ""
     });
 
-    console.log('---- Current object! ----');
+    console.log('\n---- Current object! ---- \n');
     console.log(output);
-    console.log('---- --------------- ----');
+    console.log('\n---- --------------- ---- \n');
 
     // click to open dialog to show the details!
     I.click({xpath: './/*[@id="formTemplate:dataFunc:colTable_data"]/tr[1]/td'});
     I.wait(15);
+
+
 
     // get data from dialog!
     output.matricula = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colDetail"]/table[1]//tr/td[2]'});
@@ -69,16 +67,16 @@ Scenario('End to End Crawler', function* (I) {
     output.vencBasico = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colProv"]//table[1]//tr/td[2]'});
     output.liquido = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colRend"]//table[1]//tr/td[3]'});
 
-    console.log('---- Current object! ----');
+    console.log('\n---- Current object! ----\n');
     console.log(output);
-    console.log('---- --------------- ----');
+    console.log('\n---- --------------- ----\n');
 
     if(servidores.find(serv => serv.matricula === output.matricula) === undefined){
         servidores.push(output);
     }
 
     // export output
-    fs.writeFileSync("output.json", JSON.stringify(servidores), "utf8");
+    fs.writeFileSync("output/output.json", JSON.stringify(servidores), "utf8");
 
     // grabResults: function* () {
     //     let liAmount = yield I.grabNumberOfVisibleElements("//li")
