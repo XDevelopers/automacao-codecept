@@ -72,15 +72,17 @@ function crawler(mesAno){
     return new Promise((resolve, reject) => {
         log('escolhe mês e ano!');
 
-        setPeriod();
+        // setPeriod();
 
-        var interval = setInterval(function(){
-            log('aguardando carregamento da tabela!');
-            if(checkLines(1)){
-                clearInterval(interval);
-                resolve();
-            }
-        }.bind(this), 5000);
+        // var interval = setInterval(function(){
+        //     log('aguardando carregamento da tabela!');
+        //     if(checkLines(1)){
+        //         clearInterval(interval);
+        //         resolve();
+        //     }
+        // }.bind(this), 5000);
+
+        resolve();
     })
     // - mudar a quantidade de registros por página!
     .then(function(response){
@@ -103,61 +105,88 @@ function crawler(mesAno){
             log('começa a capturar dados dos servidores!');
             var table = $(document.getElementById("formTemplate:dataFunc:colTable_data"));
             var rows = $(table).find("tr");
+            var promiseArr = [];
 
-            return Promise.all(rows.map(function (i, tr) {
-                return new Promise((resolve, reject) => {
-                    var servidor = {
-                        nome: $($(tr).find("td")[1]).text().trim(), 
-                        cargo: $($(tr).find("td")[2]).text().trim(), 
-                        lotacao: $($(tr).find("td")[3]).text().trim(),
-                        matricula: '',
-                        admissao: '',
-                        vencimentoBasico: '',
-                        liquido:''
-                    };
-                    log('dados do servidor: [' + $($(tr).find("td")[1]).text() + ']');
-                    
-                    // abre modal para capturar os demais dados do servidor atual!
-                    log('abre a modal para capturar os demais dados do servidor atual!');
-                    //$($(tr).find("td")[0]).trigger("click");
+            rows.map(function (i, tr) {
+                promiseArr.push(
+                    new Promise((resolve, reject) => {
+                        var servidor = {
+                            nome: $($(tr).find("td")[1]).text().trim(),
+                            cargo: $($(tr).find("td")[2]).text().trim(),
+                            lotacao: $($(tr).find("td")[3]).text().trim(),
+                            matricula: '',
+                            admissao: '',
+                            vencimentoBasico: '',
+                            liquido: ''
+                        };
+                        log('dados do servidor: [' + $($(tr).find("td")[1]).text() + ']');
 
-                    // check if dialog is visible
-                    //var modalIsVisible = $($x('.//*[@id="formTemplate:j_idt11"]')).css("display") === "block";
+                        return new Promise((resolve, reject) => {
+                                // abre modal para capturar os demais dados do servidor atual!
+                                log('abre a modal para capturar os demais dados do servidor atual!');
+                                $($(tr).find("td")[0]).trigger("click");
 
-                    // fecha a modal dos dados do servidor atual!
-                    log('fecha a modal dos dados do servidor atual!');
-                    //$(".ui-dialog-titlebar-close").trigger("click");                    
-                    
-                    servidores.push(servidor);
-                    resolve(servidores);
-                }).then(function(response){
-                    console.log(response);
-                });
+                                var interval = setInterval(function(){
+                                    //log('aguardando carregamento da tabela!');
+                                    if($(document.getElementById('formTemplate:j_idt11')).css("display") === "block"){
+                                        clearInterval(interval);
+                                        //resolve();
+                                    }
+                                }.bind(this), 5000);
+                            }).then(function(){
+                                return new Promise((resolve, reject) => {
+                                    console.log(servidor);
 
-            }));
+                                    var tbData = $($("[role='grid']")[0]);
+                                    var currentName = servidor.nome;
+                                    var nome = tbData.find("tr")[1].children[1].innerText.trim();
+                            
+                                    if(currentName === nome){
+                                        var tbProventos = $($("[role='grid']")[1]);
+                                        var tbRendimentos = $($("[role='grid']")[3]);
+
+                                        servidor.matricula = tbData.find("tr")[0].children[1].innerText.trim();
+                                        servidor.admissao = tbData.find("tr")[2].children[1].innerText.trim();
+                                        servidor.vencimentoBasico = tbProventos.find("tr")[1].children[1].innerText.trim();
+                                        servidor.liquido = tbRendimentos.find("tr td")[2].innerText.trim();
+
+                                        console.log(servidor);
+                                    }
+                                    
+                                    resolve();
+
+                                }).then(function(){
+                                    return new Promise((resolve, reject) => {
+                                        // fecha a modal dos dados do servidor atual!
+                                        log('fecha a modal dos dados do servidor atual!');
+                                        $(".ui-dialog-titlebar-close").trigger("click");
+
+                                        var interval = setInterval(function(){
+                                        //log('aguardando carregamento da tabela!');
+                                        if($(document.getElementById('formTemplate:j_idt11')).css("display") === "none"){
+                                            clearInterval(interval);
+                                            resolve();
+                                        }
+                                    }.bind(this), 5000);
+                                    });                                
+                                })
+                                .then(function(){
+                                    console.warn(servidor);
+                                    resolve(servidor);
+                                });     
+                            });
+                    })
+                    .then(function(result){
+                         console.warn(result);                 
+                    })
+                );
+            });
+
+            return Promise.all(promiseArr)
+            .then(results => {
+                console.log(results);
+            });
             
         });
     });
 }
-
-// exemplo
-// function geral(){
-//     var rows = [1,2,3];
-//     var result = [];
-
-//     return Promise.all(rows.map(function (el) {
-//         return new Promise((resolve, reject) => {
-//             result.push("rodou "+ el);
-//             $('#q').append('first <br>'+ el);
-//             resolve(result);
-//         });
-//     }))
-//     .then(function(response){
-//         $('#q').append('function 1' + response);
-//         return;
-//     })
-//     .then(function(response){
-//         $('#q').append('Function 2');
-//         return;
-//     });
-// }

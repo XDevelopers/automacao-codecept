@@ -258,3 +258,56 @@ function crawler(){
 
     execute();
 }
+
+
+
+
+    function devilPost(){
+        var postUrl = "http://smgp.araucaria.pr.gov.br/PortalTransparencia/faces/restricted/dataFunc.xhtml";
+
+        $.ajax({
+            url: postUrl,
+            type: 'POST',
+            dataType: 'xml',
+            data: jQuery.param({ 
+                'javax.faces.partial.ajax': true,
+                'javax.faces.source': 'formTemplate:dataFunc:colTable',
+                'javax.faces.partial.execute': 'formTemplate:dataFunc:colTable',
+                'javax.faces.partial.render': 'formTemplate:colDetail',
+                'javax.faces.behavior.event': 'rowSelect',
+                'javax.faces.partial.event': 'rowSelect',
+                'formTemplate:dataFunc:colTable_instantSelectedRowKey': 'javax.xml.bind.JAXBElement@1fa3d129',
+                'formTemplate': 'formTemplate',
+                'formTemplate:dataFunc': 'formTemplate:dataFunc',
+                'formTemplate:dataFunc:cbxCompetencia_focus': '',
+                'formTemplate:dataFunc:cbxCompetencia_input': '07/2017',
+                'formTemplate:dataFunc:cbxCargo_focus': '',
+                'formTemplate:dataFunc:cbxCargo_input': '',
+                'formTemplate:dataFunc:nome': '',
+                'formTemplate:dataFunc:colTable_rppDD': 20,
+                'formTemplate:dataFunc:colTable_selection': 'javax.xml.bind.JAXBElement@1fa3d129',
+                'javax.faces.ViewState': '4497142003737468346:308119096026829837',
+                'javax.faces.ViewState': '4497142003737468346:308119096026829837'
+            }),
+            beforeSend: function(request) {
+                request.setRequestHeader("Accept", 'application/xml, text/xml, */*;');
+                //request.setRequestHeader("Accept-Encoding", 'gzip, deflate');
+                request.setRequestHeader("Content-Type", 'application/x-www-form-urlencoded; charset=UTF-8');
+                //request.setRequestHeader("Cookie", 'JSESSIONID=d6c7c260866a4612048c8d620da8');
+                request.setRequestHeader("Faces-Request", 'partial/ajax');
+                //request.setRequestHeader("Host", 'smgp.araucaria.pr.gov.br');
+                //request.setRequestHeader("Origin", 'http://smgp.araucaria.pr.gov.br');
+                //request.setRequestHeader("Proxy-Connection", 'keep-alive');
+                //request.setRequestHeader("Referer", 'http://smgp.araucaria.pr.gov.br/PortalTransparencia/faces/restricted/dataFunc.xhtml');
+                //request.setRequestHeader("User-Agent", 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36');
+                request.setRequestHeader("X-Requested-With", 'XMLHttpRequest');                
+            },
+            success: function (response) {
+                console.log(response);
+                console.log(response.status);
+            },
+            error: function (data) {
+                console.log("error: " + data);
+            }
+        }); 
+    }
