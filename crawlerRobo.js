@@ -1,3 +1,5 @@
+/*jshint esversion: 6 */
+
 function sleep(time) {
     return new Promise((resolve, reject) => {
         setTimeout(resolve, time);
@@ -47,24 +49,29 @@ function asyncForEach(arr, func) {
 //
 // Como usar
 //
-arr = [1,2,3,4,5,6,7,8,9]
-asyncForEach(arr, (x) => sleep(1000).then(() => console.log(x)))
-  .then(() => console.log('Finished!'))
+/*
+var arr = [1,2,3,4,5,6,7,8,9];
+asyncForEach(arr, (x) => sleep(1000)
+    .then(() => console.log(x)))
+    .then(() => console.log('Finished!'));
+
+*/
 
 function crawler(mesAno) {
     
     var url = "http://smgp.araucaria.pr.gov.br/PortalTransparencia/faces/restricted/dataFunc.xhtml";
     var pages = parseInt($(".ui-paginator-current").text().split("/")[1].replace("]", "").trim()); 
     var servidores = []; 
-    var servidor =  {
-        nome:'', 
-        cargo:'', 
-        lotacao:'', 
-        matricula:'', 
-        admissao:'', 
-        vencimentoBasico:'', 
-        liquido:''
-    }; 
+    // var servidor =  {
+    //     nome:'', 
+    //     cargo:'', 
+    //     lotacao:'', 
+    //     matricula:'', 
+    //     admissao:'', 
+    //     vencimentoBasico:'', 
+    //     liquido:''
+    // }; 
+
     var total = parseInt($(".ui-paginator-current").text().split(" ")[9]); //4941;
 
     function log(message) {
@@ -91,9 +98,8 @@ function crawler(mesAno) {
         }
         
         // Call trigger 
-        $("div [id='formTemplate:dataFunc:cbxCompetencia']").find("select").trigger("change"); 
-        
-        log('trigger para mudar a competência!'); 
+        $("div [id='formTemplate:dataFunc:cbxCompetencia']").find("select").trigger("change");
+        log('trigger para mudar a competência!');        
     }
 
     function changePagination() {
@@ -111,7 +117,7 @@ function crawler(mesAno) {
         $("select[id='formTemplate:dataFunc:colTable_rppDD']").trigger("change"); 
 
         log('trigger para mudar a quantidade de registros por página!'); 
-        return wait( () => checkLines(9) && checkLoadingIsHide());
+        return wait(() => checkLines(9) && checkLoadingIsHide());
     }
 
     function checkLines(lines) {
@@ -130,60 +136,56 @@ function crawler(mesAno) {
     function checkLoadingIsHide() {
         return $(document.getElementById('formTemplate:j_idt9')).css("display") === "none"; 
     }
-
-    function step(iteration) {
-        if (iteration === 10)return; 
-        setImmediate(() =>  {
-            console.log('setImmediate iteration:${iteration}');
-            step(iteration + 1); // Recursive call from nextTick handler. 
-        });
-    }
-    //step(0);
-
+    
     function getLineData(tr){
-        console.log('getLineData', tr);
         var $tr = $(tr);
         return new Promise((resolve, reject) => {
             var dados = {
-                nome:$($tr.find("td")[1]).text().trim(), 
-                cargo:$($tr.find("td")[2]).text().trim(), 
-                lotacao:$($tr.find("td")[3]).text().trim(), 
-                matricula:'', 
-                admissao:'', 
-                vencimentoBasico:'', 
-                liquido:''
+                nome: $($tr.find("td")[1]).text().trim(), 
+                cargo: $($tr.find("td")[2]).text().trim(), 
+                lotacao: $($tr.find("td")[3]).text().trim(), 
+                matricula: '', 
+                admissao: '', 
+                vencimentoBasico: 0.00, 
+                liquido: 0.00
             };
 
+            // trigger para abrir modal
             $($tr.find("td")[0]).trigger("click");
 
             return sleep(20000).then( () => {
                 log('verificando se a modal está aberta para pegar os dados!');
-                return wait( () => checkLoadingIsHide() && checkDialog(true)).then( () => {
-                    log('pegando dados da modal !');
-                    var tbData = $($("[role='grid']")[0]); 
-                    var currentName = dados.nome; 
-                    var nome = tbData.find("tr")[1].children[1].innerText.trim();
-                    console.log(nome);
-                    if (currentName === nome) {
-                        var tbProventos = $($("[role='grid']")[1]); 
-                        var tbRendimentos = $($("[role='grid']")[3]); 
+                return wait( () => checkLoadingIsHide() && checkDialog(true) )
+                    .then( () => {
+                        log('pegando dados da modal !');
+                        var tbData = $($("[role='grid']")[0]); 
+                        var currentName = dados.nome; 
+                        var nome = tbData.find("tr")[1].children[1].innerText.trim();
+                        if (currentName === nome) {
+                            var tbProventos = $($("[role='grid']")[1]); 
+                            var tbRendimentos = $($("[role='grid']")[3]); 
 
-                        dados.matricula = tbData.find("tr")[0].children[1].innerText.trim(); 
-                        dados.admissao = tbData.find("tr")[2].children[1].innerText.trim(); 
-                        dados.vencimentoBasico = tbProventos.find("tr")[1].children[1].innerText.trim(); 
-                        dados.liquido = tbRendimentos.find("tr td")[2].innerText.trim();
-                    }
+                            dados.matricula = tbData.find("tr")[0].children[1].innerText.trim(); 
+                            dados.admissao = tbData.find("tr")[2].children[1].innerText.trim();
+                            if (tbProventos.find("tr").length > 2){
+                                dados.vencimentoBasico = tbProventos.find("tr")[1].children[1].innerText.trim();
+                            }
+                            if(tbRendimentos.find("tr").length >= 2){
+                                dados.liquido = tbRendimentos.find("tr td")[2].innerText.trim();
+                            }
+                        }
 
-                    $(".ui-dialog-titlebar-close").trigger("click"); 
-                    resolve(dados);
-                })
+                        // trigger para fechar a modal
+                        $(".ui-dialog-titlebar-close").trigger("click"); 
+                        resolve(dados);
+                    });
             });
         });
     }
 
     // - escolhe mês e ano!
-    log('escolhe mês e ano! - ' + mesAno); 
-    setPeriod(); 
+    log('escolhe mês e ano! - ' + mesAno || "06/2017");
+    setPeriod();
 
     wait( () => checkLines(1) && checkLoadingIsHide())
         .then( () => {
@@ -194,7 +196,6 @@ function crawler(mesAno) {
             log('começa a capturar dados dos servidores!'); 
             var table = $(document.getElementById("formTemplate:dataFunc:colTable_data")); 
             var rows = $(table).find("tr");
-
             var p = new Promise((resolve, reject) => resolve() );
 
             rows.each((_, tr) => {
@@ -204,11 +205,16 @@ function crawler(mesAno) {
                 p = p.then(() => getLineData(tr)).then(servidor => {
                     log('dados do servidor: [' + servidor.nome + ']'); 
                     console.log(servidor);
+                    servidores.push(servidor);
                 });
             });
 
             return p;
+        })
+        .then( () => {
+            log('- Terminou - ');
+            console.log(servidores);
         });
 }
 
-crawler();
+crawler("07/2017");
