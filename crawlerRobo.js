@@ -1,11 +1,5 @@
 /*jshint esversion: 6 */
 
-function sleep(time) {
-    return new Promise((resolve, reject) => {
-        setTimeout(resolve, time);
-    });
-}
-
 function wait(func, poolingTime) {
     var sleepTime = poolingTime || 100;
     
@@ -49,8 +43,9 @@ function asyncForEach(arr, func) {
 //
 // Como usar
 //
+
+arr = [1,2,3,4,5,6,7,8,9];
 /*
-var arr = [1,2,3,4,5,6,7,8,9];
 asyncForEach(arr, (x) => sleep(1000)
     .then(() => console.log(x)))
     .then(() => console.log('Finished!'));
@@ -193,11 +188,18 @@ function crawler(mesAno) {
             return changePagination();
         })
         .then( () => {
+            log('foram encontrados ' + total + ' registros');
             log('começa a capturar dados dos servidores!'); 
             var table = $(document.getElementById("formTemplate:dataFunc:colTable_data")); 
             var rows = $(table).find("tr");
             var p = new Promise((resolve, reject) => resolve() );
 
+            arr = Array.from(rows);
+            asyncForEach(arr, (x) => sleep(5000)
+                .then(() => console.log(x)))
+                .then(() => console.log('Finished!'));
+
+            /*
             rows.each((_, tr) => {
                 console.log('line: ' + $($(tr).find("td")[1]).text().trim());
 
@@ -210,6 +212,7 @@ function crawler(mesAno) {
             });
 
             return p;
+            */
         })
         .then( () => {
             log('- Terminou - ');
