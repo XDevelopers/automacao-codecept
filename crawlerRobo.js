@@ -1,3 +1,56 @@
+function sleep(time) {
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve, time);
+    });
+}
+
+function wait(func, poolingTime) {
+    var sleepTime = poolingTime || 100;
+    
+    function _wait(func) {
+        return new Promise((resolve, reject) => {
+            sleep(sleepTime).then(() => {
+                if (func()) {
+                    resolve();
+                } else {
+                    reject();
+                }
+            });
+        });
+    }
+
+    return _wait(func)
+        .catch(() => {
+            return wait(func, poolingTime);
+        });
+}
+
+function sleep(time) {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, time);
+  });
+}
+
+function when(value) {
+  return new Promise((resolve, reject) => {
+    resolve(value);
+  });
+}
+
+function asyncForEach(arr, func) {
+  return arr.reduce((promise, value, index) => {
+    return promise
+      .then(() => func(value, index));
+  }, when());
+}
+
+//
+// Como usar
+//
+arr = [1,2,3,4,5,6,7,8,9]
+asyncForEach(arr, (x) => sleep(1000).then(() => console.log(x)))
+  .then(() => console.log('Finished!'))
+
 function crawler(mesAno) {
     
     var url = "http://smgp.araucaria.pr.gov.br/PortalTransparencia/faces/restricted/dataFunc.xhtml";
@@ -58,6 +111,7 @@ function crawler(mesAno) {
         $("select[id='formTemplate:dataFunc:colTable_rppDD']").trigger("change"); 
 
         log('trigger para mudar a quantidade de registros por página!'); 
+        return wait( () => checkLines(9) && checkLoadingIsHide());
     }
 
     function checkLines(lines) {
@@ -87,81 +141,74 @@ function crawler(mesAno) {
     //step(0);
 
     function getLineData(tr){
-        return {
-            nome:$($(tr).find("td")[1]).text().trim(), 
-            cargo:$($(tr).find("td")[2]).text().trim(), 
-            lotacao:$($(tr).find("td")[3]).text().trim(), 
-            matricula:'', 
-            admissao:'', 
-            vencimentoBasico:'', 
-            liquido:''
-        };
+        console.log('getLineData', tr);
+        var $tr = $(tr);
+        return new Promise((resolve, reject) => {
+            var dados = {
+                nome:$($tr.find("td")[1]).text().trim(), 
+                cargo:$($tr.find("td")[2]).text().trim(), 
+                lotacao:$($tr.find("td")[3]).text().trim(), 
+                matricula:'', 
+                admissao:'', 
+                vencimentoBasico:'', 
+                liquido:''
+            };
+
+            $($tr.find("td")[0]).trigger("click");
+
+            return sleep(20000).then( () => {
+                log('verificando se a modal está aberta para pegar os dados!');
+                return wait( () => checkLoadingIsHide() && checkDialog(true)).then( () => {
+                    log('pegando dados da modal !');
+                    var tbData = $($("[role='grid']")[0]); 
+                    var currentName = dados.nome; 
+                    var nome = tbData.find("tr")[1].children[1].innerText.trim();
+                    console.log(nome);
+                    if (currentName === nome) {
+                        var tbProventos = $($("[role='grid']")[1]); 
+                        var tbRendimentos = $($("[role='grid']")[3]); 
+
+                        dados.matricula = tbData.find("tr")[0].children[1].innerText.trim(); 
+                        dados.admissao = tbData.find("tr")[2].children[1].innerText.trim(); 
+                        dados.vencimentoBasico = tbProventos.find("tr")[1].children[1].innerText.trim(); 
+                        dados.liquido = tbRendimentos.find("tr td")[2].innerText.trim();
+                    }
+
+                    $(".ui-dialog-titlebar-close").trigger("click"); 
+                    resolve(dados);
+                })
+            });
+        });
     }
 
     // - escolhe mês e ano!
-    log('escolhe mês e ano!' + mesAno); 
-    //setPeriod(); 
+    log('escolhe mês e ano! - ' + mesAno); 
+    setPeriod(); 
 
-    var getDadosModal = function (intevalo, tr) {
-        // abre modal para capturar os demais dados do servidor atual!
-        log('abre a modal para capturar os demais dados do servidor atual - [' + servidor.nome + '] !'); 
-        $($(tr).find("td")[0]).trigger("click");
-
-        // para o processo até abrir a modal 
-        var timeout1 = setTimeout(function(){
-
-            var interval = setInterval(function(){
-                log('verificando se a modal está aberta para pegar os dados!');
-                if (checkLoadingIsHide() && checkDialog(true)) {
-                    console.log('pegando os dados');
-
-                    clearInterval(interval);
-                    clearInterval(intevalo);            
-                }
-            }, 2500);
-        }, 20000);
-        
-    };
-
-
-
-    var interval1 = setInterval(function () {
-        
-        log('aguardando carregamento da tabela!'); 
-        if (checkLines(1) && checkLoadingIsHide()) {
-            clearInterval(interval1); 
-
+    wait( () => checkLines(1) && checkLoadingIsHide())
+        .then( () => {
             log('muda a quantidade de registros por página!'); 
-            //changePagination(); 
+            return changePagination();
+        })
+        .then( () => {
+            log('começa a capturar dados dos servidores!'); 
+            var table = $(document.getElementById("formTemplate:dataFunc:colTable_data")); 
+            var rows = $(table).find("tr");
 
-            var interval2 = setInterval(function () {
-                
-                log('aguardando carregamento da tabela!'); 
-                if (checkLines(9) && checkLoadingIsHide()) {
-                    clearInterval(interval2); 
-                    
-                    log('começa a capturar dados dos servidores!'); 
-                    var table = $(document.getElementById("formTemplate:dataFunc:colTable_data")); 
-                    var rows = $(table).find("tr");
+            var p = new Promise((resolve, reject) => resolve() );
 
-                    for (var i = 0; i < rows.length; i++) {
-                        var tr = rows[i];
+            rows.each((_, tr) => {
+                console.log('line: ' + $($(tr).find("td")[1]).text().trim());
 
-                        // pega os primeiro dados da grid normal!
-                        var servidor =  getLineData(tr);
+                // pega os primeiro dados da grid normal!
+                p = p.then(() => getLineData(tr)).then(servidor => {
+                    log('dados do servidor: [' + servidor.nome + ']'); 
+                    console.log(servidor);
+                });
+            });
 
-                        log('dados do servidor: [' + servidor.nome + ']'); 
-                        console.log(servidor);
-
-                            var interval3 = setInterval(getDadosModal(interval3, tr), 5000);
-
-                        var timeout1 = setTimeout(log('segurando o processo!'), 30000);
-                    }
-                }
-
-            }, 5000); 
-        }
-
-    }, 5000);
-
+            return p;
+        });
 }
+
+crawler();
