@@ -107,20 +107,13 @@ function crawler(mesAno) {
     }
 
     function trocaDePagina() {
-        $("select[id='formTemplate:dataFunc:colTable_rppDD']")
-            .find("option")
-            .each(function (i, opt) {
-                $(opt).removeAttr("selected"); 
-            }); 
+        if ($("span.ui-paginator-page.ui-state-default.ui-corner-all.ui-state-active").length > 0){
+            $("span.ui-paginator-page.ui-state-default.ui-corner-all.ui-state-active")
+            .next()
+            .trigger('click'); 
 
-        // set value to get more results per page
-        $("select[id='formTemplate:dataFunc:colTable_rppDD']")
-            .find("option[value='20']")
-            .attr("selected", "selected"); 
-
-        $("select[id='formTemplate:dataFunc:colTable_rppDD']").trigger("change"); 
-
-        log('trigger para mudar a quantidade de registros por página!'); 
+            log('trigger para mudar de página!');
+        }
         return wait(() => validaLinhas(9) && validaSeLoadingEstaOculto());
     }
 
@@ -196,10 +189,12 @@ function crawler(mesAno) {
             log('foram encontrados ' + total + ' registros');
             log('começa a capturar dados dos filiados!'); 
             var table = $(document.getElementById("formTemplate:dataFunc:colTable_data")); 
+            
             var rows = $(table).find("tr");
             var p = new Promise((resolve, reject) => resolve() );
-
+            
             arr = Array.from(rows);
+            console.log(arr);
             asyncForEach(arr, (row) => sleep(5000)
                 .then(() => {
                     //console.log(row);
@@ -207,14 +202,14 @@ function crawler(mesAno) {
                     p = p.then(() => obtemDadosPorLinha(row)).then(servidor => {
                         log('dados do servidor: [' + servidor.NomeCompleto + ']'); 
                         console.log(servidor);
-                        filiados.push(servidor);
+                        filiados.push(servidor);            
                     });
-
                 }))
                 .then(() => {
                     console.log('Finished!');
                     console.log(filiados);
                 });
+            
         })
         .then( () => {
             log('- Terminou - ');
