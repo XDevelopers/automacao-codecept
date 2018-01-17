@@ -1,5 +1,7 @@
-const fs = require("fs");
-const output = require('codeceptjs').output;
+/// <reference path="./steps.d.ts" />
+/*jshint esversion: 6 */
+var fs = require("fs");
+var output = require('codeceptjs').output;
 
 // try {
 //     var inputFromCLI = JSON.parse(process.env.input);
@@ -11,21 +13,21 @@ const output = require('codeceptjs').output;
 // }
 
 Feature('Crawler');
-
-Scenario('End to End Crawler', function* (I) {
+Scenario('Get DATA from Portal da Transparência', function* (I) {
 
     var servidores = [];
 
-    // load the main page
-    I.amOnPage("http://smgp.araucaria.pr.gov.br/PortalTransparencia/faces/restricted/dataFunc.xhtml");
-    I.wait(25);
+    // Carrega a Página Inicial
+    I.amOnPage(I.baseQueryString);
+    I.waitForElement("table[id='formTemplate:dataFunc:filtro']", 5);
 
-    // set the period
+    // Seleciona o Período desejado (Geralmente o Mês anterior)
     // select element by label, choose option by text
-    I.selectOption('select[id="formTemplate:dataFunc:cbxCompetencia_input"]','06/2017');
-    I.wait(15);
+    I.selectOption('select[id="formTemplate:dataFunc:cbxCompetencia_input"]','12/2017');
+    I.wait(20);
+    I.waitForValue('//input', "GoodValue");
 
-    // change the pagination to return more results!
+    // Altera a Quantidade de Registros por Página (para 20 registros por página)
     I.selectOption('select[id="formTemplate:dataFunc:colTable_rppDD"]', '20');
     I.wait(30);
 
@@ -51,15 +53,13 @@ Scenario('End to End Crawler', function* (I) {
         "liquido": ""
     });
 
-    console.log('\n---- Current object! ---- \n');
-    console.log(output);
-    console.log('\n---- --------------- ---- \n');
+    I.say('\n---- Current object! ---- \n');
+    I.say(output);
+    I.say('\n---- --------------- ---- \n');
 
     // click to open dialog to show the details!
     I.click({xpath: './/*[@id="formTemplate:dataFunc:colTable_data"]/tr[1]/td'});
     I.wait(15);
-
-
 
     // get data from dialog!
     output.matricula = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colDetail"]/table[1]//tr/td[2]'});
@@ -67,9 +67,9 @@ Scenario('End to End Crawler', function* (I) {
     output.vencBasico = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colProv"]//table[1]//tr/td[2]'});
     output.liquido = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colRend"]//table[1]//tr/td[3]'});
 
-    console.log('\n---- Current object! ----\n');
-    console.log(output);
-    console.log('\n---- --------------- ----\n');
+    I.say('\n---- Current object! ----\n');
+    I.say(output);
+    I.say('\n---- --------------- ----\n');
 
     if(servidores.find(serv => serv.matricula === output.matricula) === undefined){
         servidores.push(output);

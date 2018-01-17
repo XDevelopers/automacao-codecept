@@ -1,10 +1,15 @@
 {
-  "name": "portal_transparencia",
+  "name": "portal-transparencia",
   "version": "1.0.0",
   "description": "",
   "main": "codeceptjs run --steps",
   "dependencies": {
-    "codeceptjs": "^0.6.3"
+    "codeceptjs": "1.0.2",
+    "mochawesome": "3.0.0",
+    "nightmare": "^2.10.0",
+    "nightmare-upload": "^0.1.1",
+    "protractor": "^5.2.1",
+    "webdriverio": "^4.9.11"
   },
   "devDependencies": {
     "codeceptjs-webdriverio": "^1.1.0",
@@ -12,8 +17,9 @@
     "nightmare-upload": "^0.1.1"
   },
   "scripts": {
-    "run": "codeceptjs run --steps"
+    "start": "codeceptjs run --steps",
+    "test": "mocha"
   },
-  "author": "",
+  "author": " Marcio Lourenço - marcio.xdev@gmail.com",
   "license": "ISC"
 }

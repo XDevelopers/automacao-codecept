@@ -199,7 +199,9 @@ function crawler(mesAno) {
                 .then(() => {
                     //console.log(row);
                     //console.log('Linha: ' + $($(row).find("td")[1]).text().trim());
-                    p = p.then(() => obtemDadosPorLinha(row)).then(servidor => {
+                    p = p
+                    .then(() => obtemDadosPorLinha(row))
+                    .then(servidor => {
                         log('dados do servidor: [' + servidor.NomeCompleto + ']'); 
                         console.log(servidor);
                         filiados.push(servidor);            

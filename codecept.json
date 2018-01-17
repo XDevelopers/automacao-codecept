@@ -3,15 +3,22 @@
   "timeout": 10000,
   "output": "./output",
   "helpers": {
-    "Nightmare":{
+    "WebDriverIO": {
       "url":"http://smgp.araucaria.pr.gov.br/PortalTransparencia/faces/restricted/dataFunc.xhtml",
-      "show": true,
-      "restart":true,
-      "windowSize": "1024x768"
+      "browser":"chrome",
+      "windowSize": "1280x900",
+      "keepBrowserState": true,
+      "restart": false
     }
   },
-  "include": {},
+  "include": {
+    "I":"./steps_file.js"
+  },
   "bootstrap": false,
-  "mocha": {},
-  "name": "portal_transparencia"
+  "mocha": {
+    "reporterOptions": {
+        "reportDir": "output"
+    }
+  },
+  "name": "portal-transparencia"
 }

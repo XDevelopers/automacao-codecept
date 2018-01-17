@@ -18,6 +18,13 @@ $ selenium-standalone start
 
 
 
+"Nightmare":{
+    "url":"http://smgp.araucaria.pr.gov.br/PortalTransparencia/faces/restricted/dataFunc.xhtml",
+    "show": true,
+    "restart":true,
+    "windowSize": "1024x768"
+},
+
 $ npm install -g nightmare nightmare-upload
 
 $ npm install -g codeceptjs
