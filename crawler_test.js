@@ -19,13 +19,13 @@ Scenario('Get DATA from Portal da Transparência', function* (I) {
 
     // Carrega a Página Inicial
     I.amOnPage(I.baseQueryString);
-    I.waitForElement("table[id='formTemplate:dataFunc:filtro']", 5);
+    //I.waitForElement("table[id='formTemplate:dataFunc:filtro']", 5);
 
     // Seleciona o Período desejado (Geralmente o Mês anterior)
     // select element by label, choose option by text
     I.selectOption('select[id="formTemplate:dataFunc:cbxCompetencia_input"]','12/2017');
-    I.wait(20);
-    I.waitForValue('//input', "GoodValue");
+    I.waitToHide("span[id='formTemplate:j_idt9_title']", 300);
+    //I.waitForValue('//input', "GoodValue");
 
     // Altera a Quantidade de Registros por Página (para 20 registros por página)
     I.selectOption('select[id="formTemplate:dataFunc:colTable_rppDD"]', '20');
@@ -99,4 +99,29 @@ Scenario('Get DATA from Portal da Transparência', function* (I) {
     //     var applicationNumber = $("tila-doc").prop('applicationNumber');
     //     $("tila-doc").append("<input type='hidden' id='applicationNumber' value='" + applicationNumber + "' />");
     // });
+});
+
+Feature('Cenário-001 - testando for');
+
+Scenario('Acessar Alertas', (I) => {
+    I.say('eita');
+    I.Login();
+    
+    var person = {fname:"John", lname:"Doe", age:25, sex:"MMM"}; 
+
+    var text = "";
+    var x;
+    var fs = require('fs');
+    fs.appendFile("teste.txt", 'INICIO\n'); 
+    for (x in person) {
+        text += person[x];
+        I.say(text);
+       
+
+        I.wait(5);
+    }
+    fs.appendFile("teste.txt", text+'\n'); 
+    
+    I.wait(10);
+    
 });

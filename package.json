@@ -9,7 +9,7 @@
     "nightmare": "^2.10.0",
     "nightmare-upload": "^0.1.1",
     "protractor": "^5.2.1",
-    "webdriverio": "^4.9.11"
+    "webdriverio": "^4.10.1"
   },
   "devDependencies": {
     "codeceptjs-webdriverio": "^1.1.0",
