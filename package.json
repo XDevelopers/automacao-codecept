@@ -2,7 +2,7 @@
   "name": "portal-transparencia",
   "version": "1.0.0",
   "description": "",
-  "main": "codeceptjs run --steps",
+  "private": true,
   "dependencies": {
     "codeceptjs": "1.0.2",
     "mochawesome": "3.0.0",
@@ -18,8 +18,10 @@
   },
   "scripts": {
     "start": "codeceptjs run --steps",
+    "report": "codeceptjs run --steps --reporter mochawesome",
     "test": "mocha"
   },
+  "keywords": [],
   "author": " Marcio Lourenço - marcio.xdev@gmail.com",
   "license": "ISC"
 }
