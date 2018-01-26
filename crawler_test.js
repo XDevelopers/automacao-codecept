@@ -5,10 +5,12 @@ var output = require('codeceptjs').output;
 
 Feature('Crawler');
 
-//Scenario('Pegar alguns dados do Portal da Transparência', (I) => { // Desta forma meio que executará com 'promises'
+//Scenario('Pegar alguns dados do Portal da Transparência', (I, helper) => { 
+// Desta forma meio que executará com 'promises'
+
 Scenario('Pegar alguns dados do Portal da Transparência', function* (I) {
 
-    var servidores = [];
+    var servidores = [];    
 
     // Carrega a Página Inicial
     // -----------------------------------------------------------------------------------
@@ -31,123 +33,71 @@ Scenario('Pegar alguns dados do Portal da Transparência', function* (I) {
     
     // Pegar a quantidade de Páginas onde serão feitas as interações
     // -----------------------------------------------------------------------------------
-    let pages = yield I.executeScript(function () {
+    let pages = yield I.executeScript( () => {
         return parseInt(document.getElementsByClassName("ui-paginator-current")[0].innerText.split(" ")[12].split("/")[1]);
     });    
     I.say('Quantidade de páginas: ' + pages);
-    var arrayPages = new Array(pages);
-    var page;
-    I.say('arrayPages length: ' + arrayPages.length);
-    // for (page in arrayPages) {
-    //     var text = arrayPages[page];
-    //     I.say(text);
-    //     I.wait(5);
-    // }
-
+    var arrayPages = new Array(2); // TODO: Arrumar isso...
+    
+    // Looping para cada página
+    // -----------------------------------------------------------------------------------
     for (let index = 0; index < arrayPages.length; index++) {
         I.say(index);
 
 
+        // -----------------------------------------------------------------------------------
+        // Aqui deve começar o Looping por registros
+        // -----------------------------------------------------------------------------------
 
+        // Pegar a quantidade de Linhas que serão percorridas
+        // -----------------------------------------------------------------------------------
+        let rows = yield I.executeScript(() => {
+            var table = $(document.getElementById("formTemplate:dataFunc:colTable_data"));
+            return table.find("tr").length;
+        });
 
-        
-        I.wait(5);
-    }
+        // Exibir a quantidades de linhas
+        I.say('Quantidade de registros por página: ' + rows);
+        var arrayRows = new Array(rows);
 
-    // -----------------------------------------------------------------------------------
-    // Aqui deve ser um Loop para pegar todos os dados por Linha
-    // -----------------------------------------------------------------------------------
-    // loop to get all records!
-    let rows = yield I.executeScript(function () {
-        var table = $(document.getElementById("formTemplate:dataFunc:colTable_data"));
-        return table.find("tr").length;
-    });
+        // Looping para cada página
+        // -----------------------------------------------------------------------------------
+        for (let i = 1; i <= arrayRows.length; i++) {
+            I.say('Linha: ' + i);
+            
+            // start to get data from datagrid, and start to mount the main object;
+            var output = Object.assign({
+                "nomeCompleto": yield I.grabTextFrom({xpath: './/*[@id="formTemplate:dataFunc:colTable_data"]/tr[' + i + ']/td[2]'}),
+                "lotacao": yield I.grabTextFrom({xpath: './/*[@id="formTemplate:dataFunc:colTable_data"]/tr[' + i + ']/td[4]'}),
+                "cargo": yield I.grabTextFrom({xpath: './/*[@id="formTemplate:dataFunc:colTable_data"]/tr[' + i + ']/td[3]'}),
+                "matricula": "",
+                "admissao": "",
+                "vencBasico": "",
+                "liquido": ""
+            });
+            
+            // click to open dialog to show the details!
+            I.click({xpath: './/*[@id="formTemplate:dataFunc:colTable_data"]/tr[' + i + ']/td[1]'});
+            I.waitToHide("span[id='formTemplate:j_idt9_title']", 300);
+            I.waitForVisible("span[id='formTemplate:j_idt11_title']");
 
-    // Exibir a quantidades de linhas
-    I.say('Quantidade de registros por página: ' + rows);
+            // get data from dialog!
+            output.matricula = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colDetail"]/table[1]//tr[1]/td[2]'});
+            output.admissao = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colDetail"]/table[1]//tr[3]/td[2]'});
+            output.vencBasico = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colProv"]//table[1]//tr[1]/td[2]'});
+            output.liquido = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colRend"]//table[1]//tr[1]/td[3]'});
+            
+            servidores.push(output);
 
-    // start to get data from datagrid, and start to mount the main object;
-    var output = Object.assign({
-        "nomeCompleto": yield I.grabTextFrom({xpath: './/*[@id="formTemplate:dataFunc:colTable_data"]/tr[1]/td[2]'}),
-        "lotacao": yield I.grabTextFrom({xpath: './/*[@id="formTemplate:dataFunc:colTable_data"]/tr[1]/td[4]'}),
-        "cargo": yield I.grabTextFrom({xpath: './/*[@id="formTemplate:dataFunc:colTable_data"]/tr[1]/td[3]'}),
-        "matricula": "",
-        "admissao": "",
-        "vencBasico": "",
-        "liquido": ""
-    });
-
-    I.say('\n---- Current object! ---- \n');
-    console.log(output);
-    I.say('\n---- --------------- ---- \n');
-
-    // click to open dialog to show the details!
-    I.click({xpath: './/*[@id="formTemplate:dataFunc:colTable_data"]/tr[1]/td'});
-    I.waitToHide("span[id='formTemplate:j_idt9_title']", 300);
-    I.waitForVisible("span[id='formTemplate:j_idt11_title']");
-    //I.wait(15);
-
-    // get data from dialog!
-    output.matricula = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colDetail"]/table[1]//tr/td[2]'});
-    output.admissao = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colDetail"]/table[1]//tr[3]/td[2]'});
-    output.vencBasico = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colProv"]//table[1]//tr/td[2]'});
-    output.liquido = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colRend"]//table[1]//tr/td[3]'});
-
-    I.say('\n---- Current object! ----\n');
-    console.log(output);
-    I.say('\n---- --------------- ----\n');
-
-    if(servidores.find(serv => serv.matricula === output.matricula) === undefined){
-        servidores.push(output);
+            I.click("a[class*='ui-dialog-titlebar-close']");
+            I.wait(5);
+        }        
+        I.say('Trocar de página e aguardar');
+        I.click("span[class*='ui-paginator-next']");
+        I.waitToHide("span[id='formTemplate:j_idt9_title']", 300);
     }
 
     // export output
     fs.writeFileSync("output/output.json", JSON.stringify(servidores), "utf8");
 
-    // grabResults: function* () {
-    //     let liAmount = yield I.grabNumberOfVisibleElements("//li")
-    //     let returnment = []
-    //     for (let i = 0; i < liAmount; i++) {
-    //         let result = yield I.grabTextFrom(`//li[${i+1}]//h2`)
-    //         let description = yield I.grabTextFrom(`//li[${i+1}]h3`)
-    //         returnment.push([result, description])
-    //     }
-    //     return returnment
-    // },
-    //
-    // Scenario.only('test', function* (I, mainPage) {
-    //     let result = yield* mainPage.grabResults()
-    //     console.log(result)
-    // })
-
-    // // inject hidden field with application number
-    // I.executeScript(function () {
-    //     var applicationNumber = $("tila-doc").prop('applicationNumber');
-    //     $("tila-doc").append("<input type='hidden' id='applicationNumber' value='" + applicationNumber + "' />");
-    // });
 });
-
-// Feature('Cenário-001 - testando for');
-
-// Scenario('Acessar Alertas', (I) => {
-//     I.say('eita');
-//     I.Login();
-    
-//     var person = {fname:"John", lname:"Doe", age:25, sex:"MMM"}; 
-
-//     var text = "";
-//     var x;
-//     var fs = require('fs');
-//     fs.appendFile("teste.txt", 'INICIO\n'); 
-//     for (x in person) {
-//         text += person[x];
-//         I.say(text);
-       
-
-//         I.wait(5);
-//     }
-//     fs.appendFile("teste.txt", text+'\n'); 
-    
-//     I.wait(10);
-    
-// });
