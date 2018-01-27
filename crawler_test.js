@@ -10,6 +10,7 @@ Feature('Crawler');
 
 Scenario('Pegar alguns dados do Portal da Transparência', function* (I) {
 
+    var timeout = 500;
     var servidores = [];    
 
     // Carrega a Página Inicial
@@ -20,12 +21,12 @@ Scenario('Pegar alguns dados do Portal da Transparência', function* (I) {
     // select element by label, choose option by text
     // -----------------------------------------------------------------------------------
     I.selectOption('select[id="formTemplate:dataFunc:cbxCompetencia_input"]','12/2017');
-    I.waitToHide("span[id='formTemplate:j_idt9_title']", 300);
+    I.waitToHide("span[id='formTemplate:j_idt9_title']", timeout);
     
     // Altera a Quantidade de Registros por Página (para 20 registros por página)
     // -----------------------------------------------------------------------------------
     I.selectOption('select[id="formTemplate:dataFunc:colTable_rppDD"]', '20');
-    I.waitToHide("span[id='formTemplate:j_idt9_title']", 300);
+    I.waitToHide("span[id='formTemplate:j_idt9_title']", timeout);
 
     // -----------------------------------------------------------------------------------
     // Aqui deve começar o Looping por páginas
@@ -37,13 +38,12 @@ Scenario('Pegar alguns dados do Portal da Transparência', function* (I) {
         return parseInt(document.getElementsByClassName("ui-paginator-current")[0].innerText.split(" ")[12].split("/")[1]);
     });    
     I.say('Quantidade de páginas: ' + pages);
-    var arrayPages = new Array(2); // TODO: Arrumar isso...
+    var arrayPages = new Array(pages); // TODO: Arrumar isso...
     
     // Looping para cada página
     // -----------------------------------------------------------------------------------
     for (let index = 0; index < arrayPages.length; index++) {
-        I.say(index);
-
+        I.say('Página:' + index);
 
         // -----------------------------------------------------------------------------------
         // Aqui deve começar o Looping por registros
@@ -76,16 +76,35 @@ Scenario('Pegar alguns dados do Portal da Transparência', function* (I) {
                 "liquido": ""
             });
             
-            // click to open dialog to show the details!
+            // Click to open dialog to show the details!
             I.click({xpath: './/*[@id="formTemplate:dataFunc:colTable_data"]/tr[' + i + ']/td[1]'});
-            I.waitToHide("span[id='formTemplate:j_idt9_title']", 300);
+            I.waitToHide("span[id='formTemplate:j_idt9_title']", timeout);
             I.waitForVisible("span[id='formTemplate:j_idt11_title']");
 
             // get data from dialog!
             output.matricula = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colDetail"]/table[1]//tr[1]/td[2]'});
             output.admissao = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colDetail"]/table[1]//tr[3]/td[2]'});
-            output.vencBasico = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colProv"]//table[1]//tr[1]/td[2]'});
-            output.liquido = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colRend"]//table[1]//tr[1]/td[3]'});
+
+            // Validação para os Proventos
+            // -----------------------------------------------------------------------------------
+            let proventos = yield I.executeScript(() => {
+                // document.evaluate('XPATH HERE', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                return document.evaluate('.//*[@id="formTemplate:colProv"]//table[1]//tr[1]/td[2]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue !== null;
+            });
+            if (proventos) { // .//*[@id="formTemplate:colProv"]//table[1]/tbody/tr[1]/td
+                // Perform some test logic
+                output.vencBasico = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colProv"]//table[1]//tr[1]/td[2]'});
+            }
+            
+            // Validação para os Rendimentos
+            // -----------------------------------------------------------------------------------
+            let rendimentos = yield I.executeScript(() => {
+                // document.evaluate('XPATH HERE', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                return document.evaluate('.//*[@id="formTemplate:colRend"]//table[1]//tr[1]/td[3]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue !== null;
+            });
+            if (rendimentos) {
+                output.liquido = yield I.grabTextFrom({xpath: './/*[@id="formTemplate:colRend"]//table[1]//tr[1]/td[3]'});
+            }
             
             servidores.push(output);
 
@@ -94,7 +113,7 @@ Scenario('Pegar alguns dados do Portal da Transparência', function* (I) {
         }        
         I.say('Trocar de página e aguardar');
         I.click("span[class*='ui-paginator-next']");
-        I.waitToHide("span[id='formTemplate:j_idt9_title']", 300);
+        I.waitToHide("span[id='formTemplate:j_idt9_title']", timeout);
     }
 
     // export output
