@@ -18,7 +18,7 @@
   },
   "scripts": {
     "start": "codeceptjs run --steps",
-    "report": "codeceptjs run --steps --reporter mochawesome",
+    "report": "codeceptjs run --reporter mochawesome",
     "test": "mocha"
   },
   "keywords": [],
