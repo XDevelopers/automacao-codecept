@@ -32,3 +32,5 @@ $ npm install -g codeceptjs
 $ npm install codeceptjs-webdriverio --save-dev
 
 $ codeceptjs run --steps
+
+$ codeceptjs run --steps sismmar_test.js
