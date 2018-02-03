@@ -29,6 +29,9 @@ try {
         I.selectOption('select[id="formTemplate:dataFunc:colTable_rppDD"]', '20');
         I.waitToHide("span[id='formTemplate:j_idt9_title']", timeout);
 
+        var hearder = "NomeCompleto;Matricula;Admissao;Cargo;Lotacao;VencimentoBasico;Liquido;\n";
+        fs.appendFileSync("output/sismmar-csv.json", hearder, "utf8");
+
         var magisterio = [
             "PEDAGOGO",
             "PROFISSIONAL DO MAGISTÉRIO - DOCENCIA I",
@@ -53,6 +56,7 @@ try {
             // -----------------------------------------------------------------------------------
             // Aqui deve começar o Looping por páginas
             // -----------------------------------------------------------------------------------
+            var professionais = [];
 
             // Pegar a quantidade de Páginas onde serão feitas as interações
             // -----------------------------------------------------------------------------------
@@ -60,7 +64,7 @@ try {
                 return parseInt(document.getElementsByClassName("ui-paginator-current")[0].innerText.split(" ")[12].split("/")[1]);
             });
             I.say('Quantidade de páginas: ' + pages);
-            var arrayPages = new Array(pages); // TODO: Arrumar isso...
+            var arrayPages = new Array(pages);
 
             // Looping para cada página
             // -----------------------------------------------------------------------------------
@@ -112,11 +116,24 @@ try {
                         // -----------------------------------------------------------------------------------
                         let proventos = yield I.executeScript(() => {
                             // document.evaluate('XPATH HERE', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-                            return document.evaluate('.//*[@id="formTemplate:colProv"]//table[1]//tr[1]/td[2]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue !== null;
+                            
+                            var label = document.evaluate('.//*[@id="formTemplate:colProv"]//table[1]//tr[1]/td[1]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                            var vencBasico = document.evaluate('.//*[@id="formTemplate:colProv"]//table[1]//tr[1]/td[2]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+
+                            // Validar se existe a coluna e se está escrito 'VENCIMENTO BÁSICO'
+                            if (label && label.innerText === "VENCIMENTO BÁSICO"){
+                                return document.evaluate('.//*[@id="formTemplate:colProv"]//table[1]//tr[1]/td[2]', document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue !== null;
+                            }
+                            else{
+                                return false;
+                            }                            
                         });
                         if (proventos) { // .//*[@id="formTemplate:colProv"]//table[1]/tbody/tr[1]/td
                             // Perform some test logic
                             output.vencBasico = yield I.grabTextFrom({ xpath: './/*[@id="formTemplate:colProv"]//table[1]//tr[1]/td[2]' });
+                        }
+                        else{
+                            output.vencBasico = '0.0';
                         }
 
                         // Validação para os Rendimentos
@@ -128,16 +145,30 @@ try {
                         if (rendimentos) {
                             output.liquido = yield I.grabTextFrom({ xpath: './/*[@id="formTemplate:colRend"]//table[1]//tr[1]/td[3]' });
                         }
+                        else{
+                            output.liquido = '0.0';
+                        }
 
                         servidores.push(output);
+                        professionais.push(output);
+
+                        // Monta uma Linha separada por ; para gerar um CSV
+                        // -----------------------------------------------------------------------------------
+                        var stringLine = output.nomeCompleto + ";" +
+                        output.matricula + ";"+
+                        output.admissao + ";"+
+                        output.cargo + ";"+
+                        output.lotacao + ";\""+
+                        output.vencBasico.replace(",", "") + "\";\""+
+                        output.liquido.replace(",", "") + "\";\n";
+                        fs.appendFileSync("output/sismmar-csv.json", stringLine, "utf8");
 
                         I.click("a[class*='ui-dialog-titlebar-close']");
+                        I.say("Profissional: "+ output.nomeCompleto);
                         I.wait(5);
                     }
-                    fs.writeFileSync("output/servidores-" + cargo + "-pagina-00" + index + ".json", JSON.stringify(servidores), "utf8");
-                    fs.appendFileSync("output/servidores-" + cargo + ".json", JSON.stringify(servidores), "utf8");
                 } catch (error) {
-                    fs.writeFileSync("output/output_with_error.json", JSON.stringify(servidores), "utf8");
+                    fs.writeFileSync("output/output_with_error.json", JSON.stringify(error), "utf8");
                     console.error(error);
                     // export output
                     fs.writeFileSync("error.json", error, "utf8");
@@ -146,8 +177,11 @@ try {
                 I.say('Trocar de página e aguardar');
                 I.click("span[class*='ui-paginator-next']");
                 I.waitToHide("span[id='formTemplate:j_idt9_title']", timeout);
-            }
-
+            } // Termina Looping das páginas
+            
+            //  Depois de Finalizar as páginas de cada cargo gerar um arquivo
+            fs.writeFileSync("output/sismmar-cargo-" + cargo + ".json", JSON.stringify(professionais), "utf8");
+            fs.appendFileSync("output/sismmar-" + cargo + ".json", JSON.stringify(servidores), "utf8");
         }
 
         // export output
