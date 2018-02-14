@@ -30,7 +30,7 @@ try {
         I.waitToHide("span[id='formTemplate:j_idt9_title']", timeout);
 
         var hearder = "NomeCompleto;Matricula;Admissao;Cargo;Lotacao;VencimentoBasico;Liquido;\n";
-        fs.appendFileSync("output/sismmar-csv.json", hearder, "utf8");
+        fs.appendFileSync("output/sismmar.csv", hearder, "utf8");
 
         var magisterio = [
             "PEDAGOGO",
@@ -161,7 +161,7 @@ try {
                         output.lotacao + ";\""+
                         output.vencBasico.replace(",", "") + "\";\""+
                         output.liquido.replace(",", "") + "\";\n";
-                        fs.appendFileSync("output/sismmar-csv.json", stringLine, "utf8");
+                        fs.appendFileSync("output/sismmar.csv", stringLine, "utf8");
 
                         I.click("a[class*='ui-dialog-titlebar-close']");
                         I.say("Profissional: "+ output.nomeCompleto);
